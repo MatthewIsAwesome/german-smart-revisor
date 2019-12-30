@@ -1,2 +1,2 @@
 # german-smart-revisor
-A revision tool for german to 
+A revision tool for English speakers learning German
