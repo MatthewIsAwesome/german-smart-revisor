@@ -7,7 +7,6 @@ const client = new Discord.Client();
 
 const cfg = require('./config.js');
 const token = require('./token.js').token;
-//const helpResponse = "You broke something dm me with what you did (Etch-a-sketch#6122)"; //Now LEGACY
 
 // Gets all methods of an object
 const getAllMethods = (obj) => {
@@ -62,13 +61,8 @@ client.on("ready", () => { // On ready
 
 
 client.on('message', msg => { // On message sent
-  if (msg.author.bot == true) {
-    //
-  } else if (msg.guild == undefined) {
-    msg.channel.send(":x: Please send me messages in a server");
-  } else {
   msg.content = msg.content.toLowerCase(); // Makes message content lowercase and such caps work.
-
+/*
   if(client.serverData[msg.guild.id] == undefined) {
     // DEBUG: console.log("No serverdata");
     client.serverData[msg.guild.id] = gcfg.defaultServerData;
@@ -78,29 +72,34 @@ client.on('message', msg => { // On message sent
     // DEBUG: console.log("No userdata");
     client.userData[msg.author.id] = gcfg.defaultUserData;
   }
-
+*/
   // Pulls in both sets of commands for general and games recursively
   found = false;
   // General commands
   Object.entries(general).forEach(function(command) {
     command[1].aliases.forEach(function(alias) {
       if(msg.content.split(' ')[0] == (cfg.messageChar + alias)) { // TODO: Allow the bot to be mentioned to trigger commands and allow servers to set own message character/emoji (also ! is  not a good default)
-        command[1].main(msg, client);
+        if(command[1].complex == true) {
+          command[1].main(msg, client);
+        } else {
+          msg.channel.send(command[1].main(msg.content));
+        }
         found = true;
       }
     })
   })
 
-  /*if(!found && msg.content.startsWith(cfg.messageChar)) {
-    let reaction = Discord.MessageReaction = await message.react('💰');
-    let reactionUsers = await reaction.fetchUsers();
+  if(!found && msg.content.startsWith(cfg.messageChar)) {
+    msg.react('❓');
+    //let reaction = Discord.MessageReaction =
+    /*let reactionUsers = await reaction.fetchUsers();
     setTimeout(function() {
       msg.channel.send("```"+JSON.stringify(reaction)+"```");//reaction.remove(client)
-    }, 5*//*000*//*); // On unrecognised command
-  }*/
+    }, 5*//*000*//*); // On unrecognised command*/
+  }
 
 
   fs.writeFile('./serverData.json', JSON.stringify(client.serverData, null, 4), function(err, result) {if(err) console.log('error', err)}); // update userdata
   fs.writeFile('./userData.json', JSON.stringify(client.userData, null, 4), function(err, result) {if(err) console.log('error', err)}); // update userdata
-}});
+});
 client.login(token);
