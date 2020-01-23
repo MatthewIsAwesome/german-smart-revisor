@@ -1,6 +1,7 @@
 // Discord
 const Discord = require("discord.js");
 const general = require('./General/Browser.js');
+const lists = require('./wordlists/Browser.js');
 const fs = require("fs");
 
 const client = new Discord.Client();
@@ -28,62 +29,25 @@ const getAllMethods = (obj) => {
     return props;
 }
 
-// TODO: Should be moved back to logging - LEGACY.js
-
-// NOTE:  MSGlog function : not done in logging.js
-function MSGlog(msg, server, name, time, chan) { // Log message to console and file
-  output = "Server: "+server+",Channel: "+chan+",Username "+name+",Time: "+time+",Message: "+msg+"\n";
-  if(cfg.debugLevel >= 2){
-    console.log("[INFO] Logging: "+output);
-  }
-  var serverTxt = "./Servers/Logs/" + server + ".txt"
-  if (fs.existsSync(serverTxt) == false) { // Check if file exists, if not, create it.
-    files.create_file(serverTxt);
-  }
-  fs.appendFileSync(serverTxt, output);
-}
-
-function getUserFromMention(mention) { // Self explanatory
-  mention = String(mention).slice(2, -1);
-  return client.users.get(mention);
-}
-
 client.on("ready", () => { // On ready
   console.log("Logged in as " + client.user.username);
   client.user.setPresence({
-    game: { name: 'Indev' },
+    game: { name: 'revising' },
     status: 'online'
   });
-  client.userData = require('./userData.json');
-  client.serverData = require('./serverData.json')
-  console.log("[INFO] Userdata: "+JSON.stringify(client.userData));
+  lists.fetch(client);
 });
 
 
 client.on('message', msg => { // On message sent
   msg.content = msg.content.toLowerCase(); // Makes message content lowercase and such caps work.
-/*
-  if(client.serverData[msg.guild.id] == undefined) {
-    // DEBUG: console.log("No serverdata");
-    client.serverData[msg.guild.id] = gcfg.defaultServerData;
-  }
-
-  if (client.userData[msg.author.id] == undefined) {
-    // DEBUG: console.log("No userdata");
-    client.userData[msg.author.id] = gcfg.defaultUserData;
-  }
-*/
   // Pulls in both sets of commands for general and games recursively
   found = false;
   // General commands
   Object.entries(general).forEach(function(command) {
     command[1].aliases.forEach(function(alias) {
       if(msg.content.split(' ')[0] == (cfg.messageChar + alias)) { // TODO: Allow the bot to be mentioned to trigger commands and allow servers to set own message character/emoji (also ! is  not a good default)
-        if(command[1].complex == true) {
-          command[1].main(msg, client);
-        } else {
-          msg.channel.send(command[1].main(msg.content));
-        }
+        command[1].main(msg, client);
         found = true;
       }
     })
@@ -91,15 +55,6 @@ client.on('message', msg => { // On message sent
 
   if(!found && msg.content.startsWith(cfg.messageChar)) {
     msg.react('❓');
-    //let reaction = Discord.MessageReaction =
-    /*let reactionUsers = await reaction.fetchUsers();
-    setTimeout(function() {
-      msg.channel.send("```"+JSON.stringify(reaction)+"```");//reaction.remove(client)
-    }, 5*//*000*//*); // On unrecognised command*/
   }
-
-
-  fs.writeFile('./serverData.json', JSON.stringify(client.serverData, null, 4), function(err, result) {if(err) console.log('error', err)}); // update userdata
-  fs.writeFile('./userData.json', JSON.stringify(client.userData, null, 4), function(err, result) {if(err) console.log('error', err)}); // update userdata
 });
 client.login(token);
