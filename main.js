@@ -29,7 +29,8 @@ const getAllMethods = (obj) => {
     return props;
 }
 
-client.on("ready", () => { // On ready
+// On bot login
+client.on("ready", () => {
   console.log("Logged in as " + client.user.username);
   client.user.setPresence({
     game: { name: 'revising' },
@@ -40,7 +41,8 @@ client.on("ready", () => { // On ready
 
 
 client.on('message', msg => { // On message sent
-  msg.content = msg.content.toLowerCase(); // Makes message content lowercase and such caps work.
+  msg.content = msg.content.toLowerCase(); // Makes message content lowercase and such caps work
+  // TODO: remove for capitilisation?
   // Pulls in both sets of commands for general and games recursively
   found = false;
   // General commands
